@@ -150,7 +150,7 @@ textarea.has-toolbar{border-radius:0 0 8px 8px;border-top:none}
 <div class="toast" id="toast"></div>
 
 <!-- LOGIN -->
-<div id="loginPage" class="login-wrap">
+<div id="loginPage" class="login-wrap" style="display:none">
   <div class="login-card">
     <div style="text-align:center;margin-bottom:22px">
       <div style="display:inline-flex;align-items:center;gap:8px;background:#1a365d;color:#fff;padding:8px 18px;border-radius:8px;font-weight:700;font-size:15px">🔱 Hades</div>
@@ -162,6 +162,11 @@ textarea.has-toolbar{border-radius:0 0 8px 8px;border-top:none}
     <div class="form-group"><label class="form-label">Password</label><input id="loginPass" class="form-input" type="password" placeholder="password"/></div>
     <button class="btn btn-primary" style="width:100%;padding:10px" id="loginBtn" onclick="doLogin()">Masuk</button>
   </div>
+</div>
+
+<!-- AUTH CHECK OVERLAY (shown while restoring session on reload) -->
+<div id="authLoading" class="login-wrap">
+  <div style="color:#718096;font-size:14px">Memuat sesi…</div>
 </div>
 
 <!-- APP -->
@@ -412,7 +417,7 @@ textarea.has-toolbar{border-radius:0 0 8px 8px;border-top:none}
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.9.0/firebase-app.js";
 import { getFirestore, collection, doc, getDoc, getDocs, addDoc, setDoc, deleteDoc, onSnapshot, orderBy, query } from "https://www.gstatic.com/firebasejs/11.9.0/firebase-firestore.js";
-import { getAuth, signInWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/11.9.0/firebase-auth.js";
+import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.9.0/firebase-auth.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyBhRmISrUcDukByg4TtrhHGwBlTnxAA2tI",
@@ -479,25 +484,27 @@ async function seedIfEmpty(){
 }
 
 // ── AUTH ──
+async function loadUserProfile(uid,email){
+  let snap=await getDoc(doc(db,'users',uid));
+  if(!snap.exists()){
+    const all=await getDocs(collection(db,'users'));
+    const role=all.empty?'admin':'member';
+    const name=email.split('@')[0];
+    await setDoc(doc(db,'users',uid),{name,role,initials:name.slice(0,2).toUpperCase(),email});
+    snap=await getDoc(doc(db,'users',uid));
+  }
+  const profile=snap.data();
+  return {name:profile.name,role:profile.role,initials:profile.initials,uid,email:profile.email||email};
+}
+
 window.doLogin=async function(){
   const u=document.getElementById('loginUser').value.trim(),p=document.getElementById('loginPass').value;
   const err=document.getElementById('loginError'),btn=document.getElementById('loginBtn');
   if(!u||!p){err.textContent='Email dan password wajib diisi.';err.style.display='block';return;}
   btn.textContent='Memuat...';btn.disabled=true;err.style.display='none';setLoading(20);
   try{
-    const cred=await signInWithEmailAndPassword(auth,u,p);
-    const uid=cred.user.uid;setLoading(40);
-    let snap=await getDoc(doc(db,'users',uid));
-    if(!snap.exists()){
-      const all=await getDocs(collection(db,'users'));
-      const role=all.empty?'admin':'member';
-      const name=u.split('@')[0];
-      await setDoc(doc(db,'users',uid),{name,role,initials:name.slice(0,2).toUpperCase(),email:u});
-      snap=await getDoc(doc(db,'users',uid));
-    }
-    const profile=snap.data();
-    currentUser={name:profile.name,role:profile.role,initials:profile.initials,uid,email:profile.email||u};
-    setLoading(60);await seedIfEmpty();setLoading(80);startListeners();
+    await signInWithEmailAndPassword(auth,u,p);
+    // sisanya (load profil, seed, startListeners) ditangani oleh onAuthStateChanged di bawah
   }catch(e){
     let msg='Gagal login.';
     if(['auth/invalid-credential','auth/wrong-password','auth/user-not-found'].includes(e.code)) msg='Email atau password salah.';
@@ -505,6 +512,25 @@ window.doLogin=async function(){
   }
 };
 document.addEventListener('keydown',e=>{if(e.key==='Enter'&&document.getElementById('loginPage').style.display!=='none')doLogin();});
+
+// Restore sesi saat reload / kunjungan baru — ini yang sebelumnya hilang,
+// makanya user selalu ke-logout tiap reload walau token Firebase masih valid.
+onAuthStateChanged(auth,async(fbUser)=>{
+  document.getElementById('authLoading').style.display='none';
+  if(fbUser){
+    try{
+      setLoading(40);
+      currentUser=await loadUserProfile(fbUser.uid,fbUser.email);
+      setLoading(60);await seedIfEmpty();setLoading(80);startListeners();
+    }catch(e){
+      console.error(e);
+      await signOut(auth);currentUser=null;setLoading(0);
+      document.getElementById('loginPage').style.display='flex';
+    }
+  }else{
+    document.getElementById('loginPage').style.display='flex';
+  }
+});
 
 window.doLogout=function(){
   if(unsubArticles)unsubArticles();if(unsubMenus)unsubMenus();
