@@ -165,9 +165,11 @@ textarea.has-toolbar{border-radius:0 0 8px 8px;border-top:none}
 </div>
 
 <!-- AUTH CHECK OVERLAY (shown while restoring session on reload) -->
-<div id="authLoading" class="login-wrap">
-  <div style="color:#718096;font-size:14px">Memuat sesi…</div>
+<div id="authLoading" class="login-wrap" style="flex-direction:column;gap:14px">
+  <div style="width:34px;height:34px;border:3px solid #cbd5e0;border-top-color:#1a365d;border-radius:50%;animation:spin .7s linear infinite"></div>
+  <div style="color:#4a5568;font-size:14px;font-weight:600">Memuat sesi…</div>
 </div>
+<style>@keyframes spin{to{transform:rotate(360deg)}}</style>
 
 <!-- APP -->
 <div id="appShell" style="display:none">
@@ -515,7 +517,16 @@ document.addEventListener('keydown',e=>{if(e.key==='Enter'&&document.getElementB
 
 // Restore sesi saat reload / kunjungan baru — ini yang sebelumnya hilang,
 // makanya user selalu ke-logout tiap reload walau token Firebase masih valid.
+let authResolved=false;
+setTimeout(()=>{
+  if(!authResolved){
+    console.warn('[Hades] Cek sesi Firebase timeout >4s, fallback ke form login.');
+    document.getElementById('authLoading').style.display='none';
+    document.getElementById('loginPage').style.display='flex';
+  }
+},4000);
 onAuthStateChanged(auth,async(fbUser)=>{
+  authResolved=true;
   document.getElementById('authLoading').style.display='none';
   if(fbUser){
     try{
@@ -523,13 +534,17 @@ onAuthStateChanged(auth,async(fbUser)=>{
       currentUser=await loadUserProfile(fbUser.uid,fbUser.email);
       setLoading(60);await seedIfEmpty();setLoading(80);startListeners();
     }catch(e){
-      console.error(e);
+      console.error('[Hades] Gagal load profil/data setelah restore sesi:',e);
       await signOut(auth);currentUser=null;setLoading(0);
       document.getElementById('loginPage').style.display='flex';
     }
   }else{
     document.getElementById('loginPage').style.display='flex';
   }
+},err=>{
+  console.error('[Hades] onAuthStateChanged error:',err);
+  document.getElementById('authLoading').style.display='none';
+  document.getElementById('loginPage').style.display='flex';
 });
 
 window.doLogout=function(){
