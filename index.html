@@ -435,7 +435,7 @@ const auth = getAuth(app);
 
 const EMBED_HINTS={'docs.google.com/spreadsheets':'💡 Sheets: File → Publikasikan ke web → HTML → salin link.','docs.google.com/forms':'💡 Forms: Kirim → ikon embed → salin src URL.','docs.google.com/presentation':'💡 Slides: File → Publikasikan ke web → Embed → salin src.','docs.google.com/document':'💡 Docs: File → Publikasikan ke web → salin link.'};
 
-let menus=[],articles=[],currentUser=null;
+let menus=[],articles=[],currentUser=null,appShown=false;
 let editingArticleId=null,editingMenuId=null,deletingId=null,deleteType=null;
 let pendingImgData=null,activeImgTab='upload';
 let prevView='home',currentCatMenu=null;
@@ -549,7 +549,7 @@ onAuthStateChanged(auth,async(fbUser)=>{
 
 window.doLogout=function(){
   if(unsubArticles)unsubArticles();if(unsubMenus)unsubMenus();
-  signOut(auth);currentUser=null;menus=[];articles=[];
+  signOut(auth);currentUser=null;menus=[];articles=[];appShown=false;
   document.getElementById('appShell').style.display='none';
   document.getElementById('loginPage').style.display='flex';
   ['loginUser','loginPass'].forEach(id=>document.getElementById(id).value='');
@@ -565,7 +565,8 @@ function startListeners(){
     articles=snap.docs.map(d=>({...d.data(),id:d.id}));
     renderAll();setLoading(100);
     setTimeout(()=>{setLoading(0);},400);
-    if(document.getElementById('loginPage').style.display!=='none'){
+    if(!appShown){
+      appShown=true;
       document.getElementById('loginPage').style.display='none';
       document.getElementById('appShell').style.display='block';
       document.getElementById('topAvatar').textContent=currentUser.initials;
