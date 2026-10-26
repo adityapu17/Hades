@@ -1,0 +1,24 @@
+[
+  {
+    "version": "v2026.09",
+    "date": "2026-09-04",
+    "type": "feat",
+    "changes": [
+      "Update index.html [efc4bb2]",
+      "Update index.html [ef714d1]",
+      "Update index.html [a65da76]"
+    ]
+  },
+  {
+    "version": "v2026.07",
+    "date": "2026-07-13",
+    "type": "feat",
+    "changes": [
+      "index.html [c973278]",
+      "index.html [db8a6e7]",
+      "Rename hades-kb.html to index.html [3f55703]",
+      "Add Hades KB app [498c107]",
+      "Initial commit [f4292c5]"
+    ]
+  }
+]
