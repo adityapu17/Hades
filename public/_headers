@@ -1,0 +1,8 @@
+# Cloudflare static-assets headers. Replaces the [[headers]] blocks of netlify.toml.
+# Vite copies public/ into dist/, which is where Cloudflare reads this file from.
+
+/assets/*
+  Cache-Control: public, max-age=31536000, immutable
+
+/changelog.json
+  Cache-Control: public, max-age=3600

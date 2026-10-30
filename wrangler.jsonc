@@ -1,0 +1,12 @@
+{
+  // Cloudflare Workers (static assets). Replaces netlify.toml.
+  // The Worker name must match the name of the Worker you create/connect in the Cloudflare dashboard.
+  "name": "hades-peruri",
+  "compatibility_date": "2026-10-30",
+  "assets": {
+    // Output of `npm run build` (vite.config.js -> outDir: ../dist)
+    "directory": "./dist",
+    // Same behaviour as the old Netlify rule "/* -> /index.html (200)"
+    "not_found_handling": "single-page-application"
+  }
+}

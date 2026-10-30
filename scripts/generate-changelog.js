@@ -33,7 +33,22 @@ const TYPE_MAP = {
   revert: 'revert',
 };
 
+// CI hosts (Cloudflare, among others) often clone with depth=1, which would reduce the
+// changelog to a single commit. Fetch the full history first when that is the case.
+function ensureFullHistory() {
+  try {
+    const shallow = execSync('git rev-parse --is-shallow-repository', { cwd: PROJECT_ROOT, encoding: 'utf-8' }).trim();
+    if (shallow === 'true') {
+      console.log('  Shallow clone detected, fetching full history...');
+      execSync('git fetch --unshallow --quiet', { cwd: PROJECT_ROOT, stdio: 'inherit' });
+    }
+  } catch (e) {
+    console.warn('  Could not fetch full git history:', e.message);
+  }
+}
+
 function getCommits() {
+  ensureFullHistory();
   try {
     // Get git log with format: hash|subject|date|author
     const log = execSync(
@@ -130,6 +145,12 @@ function main() {
   
   const commits = getCommits();
   console.log(`  Found ${commits.length} commits`);
+
+  // No git history (e.g. build without .git): keep the committed changelog instead of overwriting it with nothing
+  if (commits.length === 0 && existsSync(OUTPUT_FILE)) {
+    console.warn('  No git history available, keeping existing changelog.json');
+    return;
+  }
 
   const groups = groupByVersion(commits);
   console.log(`  Grouped into ${groups.length} versions`);
