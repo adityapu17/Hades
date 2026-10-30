@@ -38,12 +38,12 @@
     <div id="topbarContainer"></div>
     
     <div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
-    <div class="sidebar" id="sidebar">
-      <!-- Sidebar content will be injected here -->
-      <div id="sidebarContent"></div>
-    </div>
-    
     <div class="layout">
+      <!-- The sidebar must be INSIDE .layout (flex row: sidebar | main), otherwise it stacks above the content -->
+      <div class="sidebar" id="sidebar">
+        <!-- Sidebar content will be injected here -->
+        <div id="sidebarContent"></div>
+      </div>
       <main class="main" id="mainContent">
         <!-- Page content will be loaded here -->
       </main>

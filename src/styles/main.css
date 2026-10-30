@@ -25,6 +25,8 @@ body {
 .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
 
 /* ===== Topbar ===== */
+/* Wrapper injected by JS: let .topbar's sticky positioning work against #appShell instead of this 56px box */
+#topbarContainer { display: contents; }
 .topbar {
   background: #fff; border-bottom: 1px solid #e2e8f0;
   padding: 0 20px; display: flex; align-items: center; justify-content: space-between;
