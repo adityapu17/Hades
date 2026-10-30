@@ -3,7 +3,7 @@ import { getFirestore, collection, doc, getDoc, getDocs, addDoc, setDoc, deleteD
 import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.9.0/firebase-auth.js";
 
 const firebaseConfig = {
-  apiKey: "«reda...»",
+  apiKey: "AIzaSyBhRmISrUcDukByg4TtrhHGwBlTnxAA2tI",
   authDomain: "peruri-helpdesk-kb.firebaseapp.com",
   projectId: "peruri-helpdesk-kb",
   storageBucket: "peruri-helpdesk-kb.firebasestorage.app",
