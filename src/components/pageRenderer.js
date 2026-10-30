@@ -1,6 +1,6 @@
 // ===== Page Renderer =====
 import { menus, articles, currentUser, EMBED_HINTS } from '../utils/state.js';
-import { tagClass, tagLabel, catIcon, articleCard, renderBody, showToast, setLoading } from './ui.js';
+import { tagClass, tagLabel, catIcon, articleCard, renderBody, showToast, setLoading, insertAtCursor } from './ui.js';
 import { navigateTo } from './sidebar.js';
 import { openNewArticle, editArticle, openMenuEditor, editMenu, askDelete, openProfileModal } from './modals.js';
 
@@ -8,8 +8,6 @@ import { openNewArticle, editArticle, openMenuEditor, editMenu, askDelete, openP
 window.openArticle = openArticle;
 window.clickCat = clickCat;
 window.doSearch = doSearch;
-window.renderManage = renderManage;
-window.renderMenuManager = renderMenuManager;
 window.openNewArticle = openNewArticle;
 window.editArticle = editArticle;
 window.openMenuEditor = openMenuEditor;

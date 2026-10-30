@@ -41,4 +41,4 @@ document.addEventListener('click', () => {
 
 // Expose globally
 window.toggleUserMenu = toggleUserMenu;
-window.openProfileModal = openProfileModal;
+// window.openProfileModal is exposed by components/modals.js (it is not defined in this file)

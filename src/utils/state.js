@@ -17,9 +17,15 @@ export let sidebarCollapsed = false;
 export let unsubArticles = null;
 export let unsubMenus = null;
 
-export function setMenus(val) { menus = val; }
-export function setArticles(val) { articles = val; }
-export function setCurrentUser(val) { currentUser = val; }
+// Several components read these through window.* (inline onclick handlers, modals.js, sidebar.js),
+// so every setter keeps the window copy in sync with the module copy.
+window.menus = menus;
+window.articles = articles;
+window.currentUser = currentUser;
+
+export function setMenus(val) { menus = val; window.menus = val; }
+export function setArticles(val) { articles = val; window.articles = val; }
+export function setCurrentUser(val) { currentUser = val; window.currentUser = val; }
 export function setAppShown(val) { appShown = val; }
 export function setEditingArticleId(val) { editingArticleId = val; }
 export function setEditingMenuId(val) { editingMenuId = val; }

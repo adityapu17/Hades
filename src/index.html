@@ -18,6 +18,20 @@
   </div>
   <style>@keyframes spin{to{transform:rotate(360deg)}}</style>
 
+  <!-- LOGIN (shown by auth.js when there is no active session) -->
+  <div class="login-wrap" id="loginPage" style="display:none">
+    <div class="login-card">
+      <div style="text-align:center;margin-bottom:22px">
+        <div style="display:inline-flex;align-items:center;gap:8px;background:#1a365d;color:#fff;padding:8px 18px;border-radius:8px;font-weight:700;font-size:15px">🔱 Hades</div>
+      </div>
+      <div style="font-size:19px;font-weight:700;text-align:center;margin-bottom:4px">Helpdesk Knowledge Base</div>
+      <div id="loginError" class="login-error"></div>
+      <div class="form-group"><label class="form-label">Email</label><input id="loginUser" class="form-input" type="email" placeholder="admin@peruri.id"/></div>
+      <div class="form-group"><label class="form-label">Password</label><input id="loginPass" class="form-input" type="password" placeholder="password"/></div>
+      <button class="btn btn-primary" style="width:100%;padding:10px" id="loginBtn" onclick="doLogin()">Masuk</button>
+    </div>
+  </div>
+
   <!-- APP SHELL -->
   <div id="appShell" style="display:none">
     <!-- Topbar will be injected here -->
@@ -39,13 +53,6 @@
   <!-- Modals will be injected here -->
   <div id="modalsContainer"></div>
 
-  <script type="module" src="/utils/auth.js"></script>
-  <script type="module" src="/utils/router.js"></script>
-  <script type="module" src="/utils/firebase.js"></script>
-  <script type="module" src="/utils/state.js"></script>
-  <script type="module" src="/components/sidebar.js"></script>
-  <script type="module" src="/components/topbar.js"></script>
-  <script type="module" src="/components/modals.js"></script>
   <script type="module" src="/app.js"></script>
 </body>
 </html>

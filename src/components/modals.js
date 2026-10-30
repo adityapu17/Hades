@@ -1,6 +1,6 @@
 // ===== Modals Component =====
-import { PANELS, TBBTN } from '../utils/state.js';
-import { insertAtCursor, closeModal as uiCloseModal } from './ui.js';
+import { PANELS, TBBTN, EMBED_HINTS } from '../utils/state.js';
+import { insertAtCursor, openModal, closeModal } from './ui.js';
 import { saveArticle as saveArticleData, saveMenu as saveMenuData } from '../utils/data.js';
 import { showToast } from './ui.js';
 
@@ -521,7 +521,7 @@ export function insertSyntax(pre, suf) {
 }
 
 // Expose globally
-window.closeModal = uiCloseModal;
+window.closeModal = closeModal;
 window.openModal = openModal;
 window.togglePanel = togglePanel;
 window.closePanel = closePanel;

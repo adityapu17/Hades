@@ -4,11 +4,17 @@ import { signInWithEmailAndPassword, signOut as fbSignOut, onAuthStateChanged } 
 import { loadUserProfile } from './user.js';
 import { seedIfEmpty, startListeners } from './data.js';
 import { setCurrentUser, setAppShown } from './state.js';
-import { showToast, setLoading } from '../components/ui.js';
+import { setLoading } from '../components/ui.js';
 import { renderSidebar } from '../components/sidebar.js';
 import { renderTopbar } from '../components/topbar.js';
+import { renderAll } from '../components/pageRenderer.js';
 
 let authResolved = false;
+
+function show(id, display) {
+  const el = document.getElementById(id);
+  if (el) el.style.display = display;
+}
 
 // Login form handler
 export async function doLogin() {
@@ -50,63 +56,80 @@ export function doLogout() {
   showLoginPage();
 }
 
+// Swap the "Memuat sesi…" / login screen for the real app
+function enterApp(profile) {
+  renderTopbar(profile);
+  renderSidebar();
+  show('authLoading', 'none');
+  show('loginPage', 'none');
+  show('appShell', 'block');
+  setAppShown(true);
+  renderAll(); // renders whatever the current #hash points to (defaults to home)
+}
+
 // Auth state observer
 export function initAuth() {
-  // Timeout fallback
+  // Fallback: if Firebase never answers, show the login form instead of spinning forever
   setTimeout(() => {
     if (!authResolved) {
       console.warn('[Hades] Cek sesi Firebase timeout >4s, fallback ke form login.');
-      const authLoading = document.getElementById('authLoading');
-      const loginPage = document.getElementById('loginPage');
-      if (authLoading) authLoading.style.display = 'none';
-      if (loginPage) loginPage.style.display = 'flex';
+      showLoginPage();
     }
   }, 4000);
 
   onAuthStateChanged(auth, async (fbUser) => {
     authResolved = true;
-    const authLoading = document.getElementById('authLoading');
-    if (authLoading) authLoading.style.display = 'none';
 
-    if (fbUser) {
-      try {
-        setLoading(40);
-        const profile = await loadUserProfile(fbUser.uid, fbUser.email);
-        setCurrentUser(profile);
-        setLoading(60);
-        await seedIfEmpty();
-        setLoading(80);
-        startListeners();
-      } catch (e) {
-        console.error('[Hades] Gagal load profil/data setelah restore sesi:', e);
-        await fbSignOut(auth);
-        setCurrentUser(null);
-        setLoading(0);
-        showLoginPage();
-      }
-    } else {
+    if (!fbUser) {
+      showLoginPage();
+      return;
+    }
+
+    try {
+      setLoading(40);
+      const profile = await loadUserProfile(fbUser.uid, fbUser.email);
+      setCurrentUser(profile);
+      enterApp(profile);
+      setLoading(60);
+      await seedIfEmpty();
+      setLoading(80);
+      // Avoid stacking listeners if this callback fires more than once
+      if (window.unsubArticles) window.unsubArticles();
+      if (window.unsubMenus) window.unsubMenus();
+      startListeners();
+    } catch (e) {
+      console.error('[Hades] Gagal load profil/data setelah restore sesi:', e);
+      await fbSignOut(auth);
+      setCurrentUser(null);
+      setAppShown(false);
+      setLoading(0);
       showLoginPage();
     }
   }, (err) => {
     console.error('[Hades] onAuthStateChanged error:', err);
-    const authLoading = document.getElementById('authLoading');
-    const loginPage = document.getElementById('loginPage');
-    if (authLoading) authLoading.style.display = 'none';
-    if (loginPage) loginPage.style.display = 'flex';
+    showLoginPage();
   });
 }
 
 function showLoginPage() {
   const loginPage = document.getElementById('loginPage');
-  const appShell = document.getElementById('appShell');
-  if (loginPage) loginPage.style.display = 'flex';
-  if (appShell) appShell.style.display = 'none';
+  if (!loginPage) {
+    // Secondary pages (/pages/*.html) have no login form; the root page does.
+    window.location.replace('/');
+    return;
+  }
+
+  show('authLoading', 'none');
+  show('loginPage', 'flex');
+  show('appShell', 'none');
+  show('adminMenuSection', 'none');
+
   ['loginUser', 'loginPass'].forEach(id => {
     const el = document.getElementById(id);
     if (el) el.value = '';
   });
-  const adminMenuSection = document.getElementById('adminMenuSection');
-  if (adminMenuSection) adminMenuSection.style.display = 'none';
+  const btn = document.getElementById('loginBtn');
+  if (btn) { btn.textContent = 'Masuk'; btn.disabled = false; }
 }
 
 export function onAuthReady(callback) {
