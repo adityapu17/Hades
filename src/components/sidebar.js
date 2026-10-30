@@ -12,18 +12,19 @@ export function renderSidebar() {
   
   sidebarContent.innerHTML = `
     <div class="sidebar-section">
-      <div class="sidebar-label">Menu</div>
-      <button class="sidebar-toggle-btn" onclick="toggleSidebarCollapse()" aria-label="Collapse sidebar">
-        <span class="toggle-icon">◀</span>
-        <span>Perkecil Sidebar</span>
-      </button>
+      <div class="sidebar-head">
+        <div class="sidebar-label">Menu</div>
+        <button class="sidebar-toggle-btn" id="sidebarToggleBtn" type="button" onclick="toggleSidebarCollapse()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="15 18 9 12 15 6"/></svg>
+        </button>
+      </div>
       <div id="navList"></div>
     </div>
     <div class="sidebar-section" id="adminMenuSection" style="display:none">
       <div class="sidebar-label">Admin</div>
-      <div class="nav-item" onclick="navigateTo('manage')"><span>⚙️</span> Kelola Artikel</div>
-      <div class="nav-item" onclick="navigateTo('menumanager')"><span>🗂️</span> Kelola Menu</div>
-      <div class="nav-item" onclick="navigateTo('changelog')"><span>📋</span> Changelog</div>
+      <div class="nav-item" title="Kelola Artikel" onclick="navigateTo('manage')"><span>⚙️</span><span class="nav-label">Kelola Artikel</span></div>
+      <div class="nav-item" title="Kelola Menu" onclick="navigateTo('menumanager')"><span>🗂️</span><span class="nav-label">Kelola Menu</span></div>
+      <div class="nav-item" title="Changelog" onclick="navigateTo('changelog')"><span>📋</span><span class="nav-label">Changelog</span></div>
     </div>
     <div class="sidebar-section">
       <div class="sidebar-version">Hades KB<br>v1.0.0</div>
@@ -32,6 +33,16 @@ export function renderSidebar() {
 
   buildNav();
   updateAdminMenuVisibility();
+  syncToggleButton();
+}
+
+// The toggle is an arrow-only button: CSS rotates the arrow when collapsed, this keeps the tooltip/label in sync
+function syncToggleButton() {
+  const btn = document.getElementById('sidebarToggleBtn');
+  if (!btn) return;
+  const label = sidebarCollapsed ? 'Perluas sidebar' : 'Perkecil sidebar';
+  btn.title = label;
+  btn.setAttribute('aria-label', label);
 }
 
 export function buildNav() {
@@ -43,7 +54,8 @@ export function buildNav() {
     const div = document.createElement('div');
     div.className = 'nav-item' + (i === 0 ? ' active' : '');
     div.dataset.menuid = m.id;
-    div.innerHTML = `<span>${m.icon}</span> ${m.name}`;
+    div.title = m.name; // tooltip, useful when the sidebar is collapsed to icons only
+    div.innerHTML = `<span>${m.icon}</span><span class="nav-label">${m.name}</span>`;
     div.onclick = () => { closeSidebar(); handleMenuClick(m, div); };
     nl.appendChild(div);
   });
@@ -106,12 +118,8 @@ export function toggleSidebarCollapse() {
   
   // Save preference
   localStorage.setItem('sidebarCollapsed', newState);
-  
-  // Update toggle button icon
-  const toggleBtn = sidebar.querySelector('.sidebar-toggle-btn .toggle-icon');
-  const toggleText = sidebar.querySelector('.sidebar-toggle-btn span:last-child');
-  if (toggleBtn) toggleBtn.textContent = newState ? '▶' : '◀';
-  if (toggleText) toggleText.textContent = newState ? 'Perluas Sidebar' : 'Perkecil Sidebar';
+
+  syncToggleButton();
 }
 
 export function initSidebar() {
@@ -125,13 +133,7 @@ export function initSidebar() {
     const sidebar = document.getElementById('sidebar');
     if (sidebar) sidebar.classList.add('collapsed');
   }
-  
-  // Update toggle button initial state
-  const sidebar = document.getElementById('sidebar');
-  const toggleBtn = sidebar?.querySelector('.sidebar-toggle-btn .toggle-icon');
-  const toggleText = sidebar?.querySelector('.sidebar-toggle-btn span:last-child');
-  if (toggleBtn) toggleBtn.textContent = sidebarCollapsed ? '▶' : '◀';
-  if (toggleText) toggleText.textContent = sidebarCollapsed ? 'Perluas Sidebar' : 'Perkecil Sidebar';
+  // The toggle button itself is created later by renderSidebar(), which calls syncToggleButton()
 }
 
 // Expose globally

@@ -52,33 +52,29 @@ body {
 .sidebar {
   width: 210px; background: #fff; border-right: 1px solid #e2e8f0;
   padding: 12px 0; flex-shrink: 0; position: sticky; top: 56px;
-  height: calc(100vh - 56px); overflow-y: auto; transition: transform .25s, width .25s;
+  height: calc(100vh - 56px); overflow-y: auto; overflow-x: hidden; transition: transform .25s, width .25s;
 }
-.sidebar.collapsed { width: 60px; }
 .sidebar-section { padding: 0 10px 14px; }
-.sidebar-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: #a0aec0; padding: 0 8px 7px; transition: opacity .15s; }
-.sidebar.collapsed .sidebar-label { opacity: 0; pointer-events: none; height: 0; padding: 0; overflow: hidden; }
+.sidebar-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+.sidebar-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: #a0aec0; padding: 0 8px 7px; }
+.sidebar-head .sidebar-label { padding-bottom: 0; }
 .nav-item {
   display: flex; align-items: center; gap: 8px; padding: 7px 8px;
   border-radius: 6px; cursor: pointer; color: #4a5568; font-size: 13px; transition: .15s;
   white-space: nowrap; overflow: hidden;
 }
-.sidebar.collapsed .nav-item { justify-content: center; padding: 7px 0; }
-.sidebar.collapsed .nav-item span:not(:first-child) { display: none; }
 .nav-item:hover { background: #f0f4ff; color: #1a365d; }
 .nav-item.active { background: #ebf0ff; color: #1a365d; font-weight: 600; }
+/* Arrow-only collapse button (the arrow is rotated by the collapsed rules in the desktop media query below) */
 .sidebar-toggle-btn {
-  display: flex; align-items: center; justify-content: center; width: 100%; padding: 8px; margin: 0 8px 12px;
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+  width: 28px; height: 28px; padding: 0;
   background: #f0f4ff; border: 1px solid #e2e8f0; border-radius: 6px;
-  cursor: pointer; color: #4a5568; font-size: 14px; transition: .15s;
+  cursor: pointer; color: #4a5568; transition: background .15s, color .15s;
 }
 .sidebar-toggle-btn:hover { background: #ebf0ff; color: #1a365d; }
-.sidebar.collapsed .sidebar-toggle-btn { padding: 8px 0; margin: 0 4px 12px; }
-.sidebar.collapsed .sidebar-toggle-btn span { display: none; }
-.sidebar-toggle-btn .toggle-icon { transition: transform .25s; display: inline-block; }
-.sidebar.collapsed .sidebar-toggle-btn .toggle-icon { transform: rotate(180deg); }
+.sidebar-toggle-btn svg { transition: transform .25s; }
 .sidebar-version { padding: 0 8px; font-size: 10px; color: #cbd5e0; line-height: 1.6; text-align: center; }
-.sidebar.collapsed .sidebar-version { opacity: 0; height: 0; overflow: hidden; padding: 0; }
 
 .sidebar-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.35); z-index: 90; }
 .sidebar-overlay.open { display: block; }
@@ -240,6 +236,7 @@ textarea.has-toolbar { border-radius: 0 0 8px 8px; border-top: none; }
   .sidebar.collapsed { width: 230px; transform: translateX(-100%); }
   .sidebar.collapsed.open { transform: translateX(0); width: 230px; }
   .sidebar-overlay.open { display: block; }
+  .sidebar-toggle-btn { display: none; } /* mobile uses the ☰ button in the topbar */
   .user-name-text, .badge-role { display: none; }
   .main { padding: 14px; }
   .grid-2 { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 10px; }
@@ -251,11 +248,13 @@ textarea.has-toolbar { border-radius: 0 0 8px 8px; border-top: none; }
 }
 
 @media (min-width: 681px) {
+  /* Collapsed = icons only (mobile uses the slide-in drawer instead, so this must not apply there) */
   .sidebar.collapsed { width: 60px; }
-  .sidebar.collapsed .nav-item span:not(:first-child) { display: none; }
-  .sidebar.collapsed .sidebar-label { opacity: 0; pointer-events: none; height: 0; padding: 0; overflow: hidden; }
-  .sidebar.collapsed .sidebar-toggle-btn { padding: 8px 0; margin: 0 4px 12px; }
-  .sidebar.collapsed .sidebar-toggle-btn span { display: none; }
-  .sidebar.collapsed .sidebar-toggle-btn .toggle-icon { transform: rotate(180deg); }
-  .sidebar.collapsed .sidebar-version { opacity: 0; height: 0; overflow: hidden; padding: 0; }
+  .sidebar.collapsed .sidebar-label,
+  .sidebar.collapsed .nav-label,
+  .sidebar.collapsed .sidebar-version { display: none; }
+  .sidebar.collapsed .sidebar-head { justify-content: center; }
+  .sidebar.collapsed .sidebar-toggle-btn svg { transform: rotate(180deg); }
+  .sidebar.collapsed .nav-item { justify-content: center; padding: 9px 0; font-size: 18px; }
+  .sidebar.collapsed #adminMenuSection { border-top: 1px solid #e2e8f0; margin-top: 4px; padding-top: 12px; }
 }
