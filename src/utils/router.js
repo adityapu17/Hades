@@ -8,6 +8,7 @@ const routes = {
   'category': 'category',
   'manage': 'manage',
   'menumanager': 'menumanager',
+  'users': 'users',
   'changelog': 'changelog',
   'profile': 'profile',
   'login': 'login'

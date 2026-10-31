@@ -104,6 +104,10 @@ export function initAuth() {
       setAppShown(false);
       setLoading(0);
       showLoginPage();
+      if (e.code === 'hades/disabled') {
+        const err = document.getElementById('loginError');
+        if (err) { err.textContent = 'Akun ini sudah dinonaktifkan. Hubungi admin.'; err.style.display = 'block'; }
+      }
     }
   }, (err) => {
     console.error('[Hades] onAuthStateChanged error:', err);

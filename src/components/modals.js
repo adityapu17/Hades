@@ -142,6 +142,38 @@ export function renderModals() {
       </div>
     </div>
 
+    <!-- USER EDITOR (Kelola User) -->
+    <div class="modal-overlay" id="userEditorModal">
+      <div class="modal" style="max-width:420px">
+        <div class="modal-header">
+          <div class="modal-title" id="userEditorTitle">User Baru</div>
+          <button class="modal-close" onclick="closeModal('userEditorModal')">✕</button>
+        </div>
+        <div class="modal-body">
+          <div id="userEditorError" class="login-error"></div>
+          <div class="form-group"><label class="form-label">Nama</label><input id="userName" class="form-input" placeholder="Nama lengkap"/></div>
+          <div class="form-group"><label class="form-label">Email</label><input id="userEmail" class="form-input" type="email" placeholder="nama@peruri.id" autocomplete="off"/></div>
+          <div class="form-group" id="userPassGroup">
+            <label class="form-label">Password awal</label>
+            <div style="display:flex;gap:6px">
+              <input id="userPass" class="form-input" type="text" placeholder="minimal 6 karakter" autocomplete="off"/>
+              <button type="button" class="btn btn-ghost" onclick="generateUserPassword()" style="white-space:nowrap">Acak</button>
+            </div>
+            <div style="font-size:11px;color:#a0aec0;margin-top:5px">Catat password ini lalu berikan ke user; setelah disimpan tidak bisa dilihat lagi.</div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Role</label>
+            <select id="userRole" class="form-select"><option value="member">Member</option><option value="admin">Admin</option></select>
+            <div id="userRoleHint" style="display:none;font-size:11px;color:#a0aec0;margin-top:5px">Role akun sendiri tidak bisa diubah.</div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-ghost" onclick="closeModal('userEditorModal')">Batal</button>
+          <button class="btn btn-primary" id="saveUserBtn" onclick="saveUser()">Simpan</button>
+        </div>
+      </div>
+    </div>
+
     <!-- PROFILE -->
     <div class="modal-overlay" id="profileModal">
       <div class="modal" style="max-width:360px">

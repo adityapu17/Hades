@@ -24,6 +24,7 @@ export function renderSidebar() {
       <div class="sidebar-label">Admin</div>
       <div class="nav-item" title="Kelola Artikel" onclick="navigateTo('manage')"><span>⚙️</span><span class="nav-label">Kelola Artikel</span></div>
       <div class="nav-item" title="Kelola Menu" onclick="navigateTo('menumanager')"><span>🗂️</span><span class="nav-label">Kelola Menu</span></div>
+      <div class="nav-item" title="Kelola User" onclick="navigateTo('users')"><span>👥</span><span class="nav-label">Kelola User</span></div>
       <div class="nav-item" title="Changelog" onclick="navigateTo('changelog')"><span>📋</span><span class="nav-label">Changelog</span></div>
     </div>
     <div class="sidebar-section">

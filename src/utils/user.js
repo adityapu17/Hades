@@ -12,5 +12,9 @@ export async function loadUserProfile(uid, email) {
     snap = await getDoc(document('users', uid));
   }
   const profile = snap.data();
+  if (profile.disabled) {
+    // Deactivated from "Kelola User": refuse the session (auth.js signs out and shows the message)
+    throw Object.assign(new Error('Akun dinonaktifkan'), { code: 'hades/disabled' });
+  }
   return { name: profile.name, role: profile.role, initials: profile.initials, uid, email: profile.email || email };
 }

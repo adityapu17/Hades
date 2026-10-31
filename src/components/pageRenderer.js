@@ -3,6 +3,7 @@ import { menus, articles, currentUser, EMBED_HINTS } from '../utils/state.js';
 import { tagClass, tagLabel, catIcon, articleCard, renderBody, showToast, setLoading, insertAtCursor } from './ui.js';
 import { navigateTo } from './sidebar.js';
 import { openNewArticle, editArticle, openMenuEditor, editMenu, askDelete, openProfileModal } from './modals.js';
+import { renderUsersPage, refreshUsers } from './usersPage.js';
 
 // Make functions available globally
 window.openArticle = openArticle;
@@ -51,6 +52,10 @@ export async function renderPage(page, params) {
     case 'menumanager':
       main.innerHTML = renderMenuManagerPage();
       break;
+    case 'users':
+      main.innerHTML = renderUsersPage();
+      refreshUsers();
+      break;
     case 'changelog':
       main.innerHTML = await renderChangelog();
       break;
@@ -80,6 +85,8 @@ function updateActiveNav(page, params) {
     document.querySelector('[onclick="navigateTo(\'manage\')"]')?.classList.add('active');
   } else if (page === 'menumanager') {
     document.querySelector('[onclick="navigateTo(\'menumanager\')"]')?.classList.add('active');
+  } else if (page === 'users') {
+    document.querySelector('[onclick="navigateTo(\'users\')"]')?.classList.add('active');
   } else if (page === 'changelog') {
     document.querySelector('[onclick="navigateTo(\'changelog\')"]')?.classList.add('active');
   }
