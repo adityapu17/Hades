@@ -1,0 +1,44 @@
+// Firestore rules for Hades KB. Publish: Firebase Console -> Firestore Database -> Rules
+// (or `firebase deploy --only firestore:rules` if you use the Firebase CLI).
+//
+// Model: an account = Firebase Auth login + a profile doc users/{uid} created by an admin.
+// A login without a profile (e.g. someone who called the sign-up API directly) can read nothing.
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function signedIn() {
+      return request.auth != null;
+    }
+    function profilePath() {
+      return /databases/$(database)/documents/users/$(request.auth.uid);
+    }
+    // Registered by an admin and not deactivated
+    function isActive() {
+      return signedIn() && exists(profilePath())
+        && get(profilePath()).data.get('disabled', false) != true;
+    }
+    function isAdmin() {
+      return isActive() && get(profilePath()).data.role == 'admin';
+    }
+
+    match /users/{userId} {
+      // Everyone may read their OWN profile (needed at login, also to learn they were deactivated);
+      // only admins may read others / list all users.
+      allow get: if signedIn() && (request.auth.uid == userId || isAdmin());
+      allow list: if isAdmin();
+      allow create, update: if isAdmin();   // role, name and "disabled" can only be changed by an admin
+      allow delete: if false;               // use "Nonaktifkan" in Kelola User
+    }
+
+    match /articles/{articleId} {
+      allow read: if isActive();
+      allow write: if isAdmin();
+    }
+
+    match /menus/{menuId} {
+      allow read: if isActive();
+      allow write: if isAdmin();
+    }
+  }
+}

@@ -1,15 +1,13 @@
 // ===== User Profile =====
-import { db, document, col } from './firebase.js';
-import { getDoc, getDocs, setDoc } from "https://www.gstatic.com/firebasejs/11.9.0/firebase-firestore.js";
+// A Hades account = a Firebase Auth login + a profile doc `users/{uid}` created by an admin ("Kelola User").
+// Having only an Auth login is not enough: nobody can register themselves.
+import { document } from './firebase.js';
+import { getDoc } from "https://www.gstatic.com/firebasejs/11.9.0/firebase-firestore.js";
 
 export async function loadUserProfile(uid, email) {
-  let snap = await getDoc(document('users', uid));
+  const snap = await getDoc(document('users', uid));
   if (!snap.exists()) {
-    const all = await getDocs(col('users'));
-    const role = all.empty ? 'admin' : 'member';
-    const name = email.split('@')[0];
-    await setDoc(document('users', uid), { name, role, initials: name.slice(0, 2).toUpperCase(), email });
-    snap = await getDoc(document('users', uid));
+    throw Object.assign(new Error('Akun belum terdaftar'), { code: 'hades/not-registered' });
   }
   const profile = snap.data();
   if (profile.disabled) {

@@ -32,9 +32,25 @@ export function navigate(to, replace = false) {
 }
 
 export function handleRouteChange() {
-  const { name, params, path } = getRoute();
-  const page = routes[name] || 'home';
-  renderPage(page, params);
+  // Session still being restored: don't touch the URL yet (auth.js renders the right page when it knows)
+  if (window.authState === 'pending') return;
+
+  const { name, params } = getRoute();
+
+  // Not signed in: every URL leads to the login page
+  if (!window.currentUser) {
+    if (name !== 'login') window.history.replaceState(null, '', '#login');
+    return;
+  }
+
+  // Signed in: the login URL makes no sense, go to the default page
+  if (name === 'login') {
+    window.history.replaceState(null, '', '#home');
+    renderPage('home', '');
+    return;
+  }
+
+  renderPage(routes[name] || 'home', params);
 }
 
 // Listen for hash changes

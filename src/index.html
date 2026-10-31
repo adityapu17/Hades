@@ -26,9 +26,23 @@
       </div>
       <div style="font-size:19px;font-weight:700;text-align:center;margin-bottom:4px">Helpdesk Knowledge Base</div>
       <div id="loginError" class="login-error"></div>
-      <div class="form-group"><label class="form-label">Email</label><input id="loginUser" class="form-input" type="email" placeholder="admin@peruri.id"/></div>
-      <div class="form-group"><label class="form-label">Password</label><input id="loginPass" class="form-input" type="password" placeholder="password"/></div>
-      <button class="btn btn-primary" style="width:100%;padding:10px" id="loginBtn" onclick="doLogin()">Masuk</button>
+      <div id="loginInfo" class="login-info"></div>
+
+      <div id="loginForm">
+        <div class="form-group"><label class="form-label">Email</label><input id="loginUser" class="form-input" type="email" placeholder="admin@peruri.id" autocomplete="username"/></div>
+        <div class="form-group"><label class="form-label">Password</label><input id="loginPass" class="form-input" type="password" placeholder="password" autocomplete="current-password"/></div>
+        <button class="btn btn-primary" style="width:100%;padding:10px" id="loginBtn" onclick="doLogin()">Masuk</button>
+        <div style="text-align:center;margin-top:14px"><button type="button" class="link-btn" onclick="showForgot()">Lupa password?</button></div>
+      </div>
+
+      <div id="forgotForm" style="display:none">
+        <div style="font-size:13px;color:#4a5568;margin-bottom:12px">Masukkan email akun Anda. Kami akan mengirim link untuk membuat password baru.</div>
+        <div class="form-group"><label class="form-label">Email</label><input id="forgotEmail" class="form-input" type="email" placeholder="nama@peruri.id" autocomplete="username"/></div>
+        <button class="btn btn-primary" style="width:100%;padding:10px" id="forgotBtn" onclick="doReset()">Kirim Link Reset</button>
+        <div style="text-align:center;margin-top:14px"><button type="button" class="link-btn" onclick="hideForgot()">← Kembali ke login</button></div>
+      </div>
+
+      <div style="font-size:11px;color:#a0aec0;text-align:center;margin-top:18px">Akun dibuat oleh admin. Belum punya akun? Hubungi admin.</div>
     </div>
   </div>
 
