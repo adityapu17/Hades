@@ -472,6 +472,8 @@ export async function saveMenu() {
 
 // Delete
 export function askDelete(id, type) {
+  // System menus (e.g. Beranda) can be edited but never deleted
+  if (type === 'menu' && (window.menus || []).find(m => m.id === id)?.system) return;
   deletingId = id;
   deleteType = type;
   const titleEl = document.getElementById('deleteModalTitle');

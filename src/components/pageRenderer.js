@@ -208,11 +208,11 @@ function renderMenuManagerList() {
       <span class="drag-handle">⠿</span>
       <span style="font-size:18px;width:24px;text-align:center">${m.icon}</span>
       <span style="flex:1;font-size:13px;font-weight:500">${m.name}</span>
-      ${m.system ? '<span style="font-size:11px;color:#a0aec0;padding:2px 7px;background:#f7fafc;border-radius:8px">sistem</span>' : `
+      ${m.system ? '<span style="font-size:11px;color:#a0aec0;padding:2px 7px;background:#f7fafc;border-radius:8px">sistem</span>' : ''}
       <div style="display:flex;gap:5px">
         <button class="btn btn-ghost btn-sm" onclick="editMenu('${m.id}')">Edit</button>
-        <button class="btn btn-sm" style="background:#fff5f5;color:#e53e3e;border:1px solid #fed7d7" onclick="askDelete('${m.id}','menu')">Hapus</button>
-      </div>`}
+        ${m.system ? '' : `<button class="btn btn-sm" style="background:#fff5f5;color:#e53e3e;border:1px solid #fed7d7" onclick="askDelete('${m.id}','menu')">Hapus</button>`}
+      </div>
     </div>`).join('');
 }
 

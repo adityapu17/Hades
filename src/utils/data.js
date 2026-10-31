@@ -63,6 +63,7 @@ export async function deleteArticle(id) {
 }
 
 export async function deleteMenu(id) {
+  if (menus.find(m => m.id === id)?.system) throw new Error('Menu sistem tidak bisa dihapus.');
   await deleteDoc(document('menus', id));
 }
 
