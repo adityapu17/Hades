@@ -107,12 +107,14 @@ export function initAuth() {
       startListeners();
     } catch (e) {
       console.error('[Hades] Gagal load profil/data setelah restore sesi:', e);
-      await fbSignOut(auth);
+      // A timeout is a connectivity problem, not a bad account: keep the session so a reload can retry
+      if (e.code !== 'hades/timeout') await fbSignOut(auth);
       setCurrentUser(null);
       setAppShown(false);
       setLoading(0);
       showLoginPage();
       const reason = {
+        'hades/timeout': 'Server tidak merespons. Periksa koneksi lalu muat ulang halaman.',
         'hades/disabled': 'Akun ini sudah dinonaktifkan. Hubungi admin.',
         'hades/not-registered': 'Akun ini belum terdaftar di Hades. Hubungi admin untuk dibuatkan akun.'
       }[e.code];

@@ -5,7 +5,11 @@ import { document } from './firebase.js';
 import { getDoc } from "https://www.gstatic.com/firebasejs/11.9.0/firebase-firestore.js";
 
 export async function loadUserProfile(uid, email) {
-  const snap = await getDoc(document('users', uid));
+  // Firestore can hang (blocked network, rules not reachable); don't leave "Memuat sesi…" spinning forever
+  const snap = await Promise.race([
+    getDoc(document('users', uid)),
+    new Promise((_, rej) => setTimeout(() => rej(Object.assign(new Error('Firestore timeout'), { code: 'hades/timeout' })), 10000))
+  ]);
   if (!snap.exists()) {
     throw Object.assign(new Error('Akun belum terdaftar'), { code: 'hades/not-registered' });
   }

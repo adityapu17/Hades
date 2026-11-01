@@ -18,6 +18,26 @@
   </div>
   <style>@keyframes spin{to{transform:rotate(360deg)}}</style>
 
+  <!-- Watchdog: if the app script fails to load/run, show why instead of spinning forever -->
+  <script>
+    (function () {
+      var errs = [];
+      function note(m) { errs.push(String(m)); }
+      window.addEventListener('error', function (e) {
+        note(e.message || (e.target && (e.target.src || e.target.href) ? 'Gagal memuat ' + (e.target.src || e.target.href) : 'error'));
+      }, true);
+      window.addEventListener('unhandledrejection', function (e) { note((e.reason && e.reason.message) || e.reason); });
+      setTimeout(function () {
+        var l = document.getElementById('authLoading');
+        if (!l || l.style.display === 'none' || window.authState === 'in' || window.authState === 'out') return;
+        l.innerHTML = '<div style="max-width:420px;text-align:center;font:14px sans-serif;color:#4a5568">' +
+          '<div style="font-weight:700;margin-bottom:6px">Aplikasi gagal dimuat</div>' +
+          '<div style="margin-bottom:12px">' + (errs.length ? errs.join('<br>').replace(/</g, '&lt;') : 'Tidak ada respons dari server. Periksa koneksi, lalu coba lagi.') + '</div>' +
+          '<button onclick="location.reload()" style="padding:8px 16px;border:0;border-radius:6px;background:#1a365d;color:#fff;cursor:pointer">Muat ulang</button></div>';
+      }, 12000);
+    })();
+  </script>
+
   <!-- LOGIN (shown by auth.js when there is no active session) -->
   <div class="login-wrap" id="loginPage" style="display:none">
     <div class="login-card">
