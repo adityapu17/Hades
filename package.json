@@ -5,7 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
+    "build": "vite build && npm run build:quiz",
+    "build:quiz": "cd quiz && npm ci && npm run build",
     "preview": "vite preview",
     "deploy": "npm run build && npx wrangler deploy",
     "changelog": "node scripts/generate-changelog.js"

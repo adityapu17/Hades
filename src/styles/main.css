@@ -63,6 +63,7 @@ body {
   border-radius: 6px; cursor: pointer; color: #4a5568; font-size: 13px; transition: .15s;
   white-space: nowrap; overflow: hidden;
 }
+a.nav-item { text-decoration: none; }
 .nav-item:hover { background: #f0f4ff; color: #1a365d; }
 .nav-item.active { background: #ebf0ff; color: #1a365d; font-weight: 600; }
 /* Arrow-only collapse button (the arrow is rotated by the collapsed rules in the desktop media query below) */

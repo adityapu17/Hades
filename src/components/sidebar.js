@@ -19,6 +19,7 @@ export function renderSidebar() {
         </button>
       </div>
       <div id="navList"></div>
+      <a class="nav-item" href="/quiz/" title="Quiz"><span>📝</span><span class="nav-label">Quiz</span></a>
     </div>
     <div class="sidebar-section" id="adminMenuSection" style="display:none">
       <div class="sidebar-label">Admin</div>

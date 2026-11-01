@@ -1,4 +1,5 @@
-// Firestore rules for Hades KB. Publish: Firebase Console -> Firestore Database -> Rules
+// Firestore rules for Hades KB and its Quiz app (/quiz/, folder quiz/) - one Firebase project, one ruleset.
+// Publish: Firebase Console -> Firestore Database -> Rules
 // (or `firebase deploy --only firestore:rules` if you use the Firebase CLI).
 //
 // Model: an account = Firebase Auth login + a profile doc users/{uid} created by an admin.
@@ -39,6 +40,30 @@ service cloud.firestore {
     match /menus/{menuId} {
       allow read: if isActive();
       allow write: if isAdmin();
+    }
+
+    // ----- Quiz app (/quiz/) -----
+    match /questionBanks/{bankId} {
+      allow read: if isActive();
+      allow write: if isAdmin();
+    }
+
+    match /questions/{questionId} {
+      allow read: if isActive();
+      allow write: if isAdmin();
+    }
+
+    match /quizzes/{quizId} {
+      allow read: if isActive();
+      allow write: if isAdmin();
+    }
+
+    // A member can only read/write their OWN attempt; admins can read all (monitor) but never edit scores.
+    match /attempts/{attemptId} {
+      allow read: if isActive() && (resource.data.userId == request.auth.uid || isAdmin());
+      allow create: if isActive() && request.resource.data.userId == request.auth.uid;
+      allow update: if isActive() && resource.data.userId == request.auth.uid;
+      allow delete: if isAdmin();
     }
   }
 }
