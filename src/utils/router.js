@@ -37,11 +37,8 @@ export function handleRouteChange() {
 
   const { name, params } = getRoute();
 
-  // Not signed in: every URL leads to the login page
-  if (!window.currentUser) {
-    if (name !== 'login') window.history.replaceState(null, '', '#login');
-    return;
-  }
+  // Not signed in: the login form is shown (auth.js); the URL is left alone
+  if (!window.currentUser) return;
 
   // Signed in: the login URL makes no sense, go to the default page
   if (name === 'login') {

@@ -2,7 +2,7 @@
 
 Aplikasi quiz internal: admin membuat bank soal dan quiz, member mengerjakan dengan timer, hasil dipantau real-time.
 Aplikasi ini berjalan di `/quiz/` pada domain Hades dan **tidak punya login sendiri**: sesi berasal dari login Hades
-(satu domain + satu project Firebase). Belum login atau akun belum terdaftar/dinonaktifkan: diarahkan ke `/#login` di Hades.
+(satu domain + satu project Firebase). Belum login atau akun belum terdaftar/dinonaktifkan: diarahkan ke halaman login Hades (`/`).
 
 - Akun dibuat/diubah/dinonaktifkan di Hades -> **Kelola User** (role `admin` atau `member`).
 - Router memakai hash (`/quiz/#/quiz`, `/quiz/#/admin`), jadi tidak butuh rewrite di server.

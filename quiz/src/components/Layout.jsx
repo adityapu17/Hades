@@ -29,7 +29,7 @@ export default function Layout({ children }) {
   // Sign-in lives on Hades: log out, then land on the Hades login page
   const handleLogout = async () => {
     await logout()
-    window.location.assign('/#login')
+    window.location.assign('/')
   }
 
   return (

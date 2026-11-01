@@ -11,7 +11,7 @@ export default function ProtectedRoute({ children, requireAdmin = false }) {
 
   // Not signed in: sign in on Hades (outside this app, so a plain redirect rather than a router <Navigate>)
   useEffect(() => {
-    if (!loading && !user) window.location.replace('/#login')
+    if (!loading && !user) window.location.replace('/')
   }, [loading, user])
 
   if (loading) return waiting('Memuat…')

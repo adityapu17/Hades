@@ -10,6 +10,7 @@ import { renderTopbar } from '../components/topbar.js';
 import { renderAll } from '../components/pageRenderer.js';
 
 let authResolved = false;
+let freshLogin = false; // true between a submitted login form and entering the app
 
 // 'pending' = restoring session, 'in' = signed in with a Hades profile, 'out' = show login (read by router.js)
 window.authState = 'pending';
@@ -37,6 +38,7 @@ export async function doLogin() {
   setLoading(20);
 
   try {
+    freshLogin = true;
     await signInWithEmailAndPassword(auth, u, p);
     // Rest handled by onAuthStateChanged
   } catch (e) {
@@ -44,6 +46,7 @@ export async function doLogin() {
     if (['auth/invalid-credential', 'auth/wrong-password', 'auth/user-not-found'].includes(e.code)) {
       msg = 'Email atau password salah.';
     }
+    freshLogin = false;
     if (err) { err.textContent = msg; err.style.display = 'block'; }
     if (btn) { btn.textContent = 'Masuk'; btn.disabled = false; }
     setLoading(0);
@@ -63,9 +66,10 @@ export function doLogout() {
 // Swap the "Memuat sesi…" / login screen for the real app
 function enterApp(profile) {
   window.authState = 'in';
-  // Fresh login (or opening the bare URL / #login) always lands on #home; a refresh keeps the current page
+  // Only a fresh login (the form was submitted) is sent to #home; a refresh with a saved session keeps the current page
   const h = window.location.hash.slice(1);
-  if (h === '' || h === 'login') window.history.replaceState(null, '', '#home');
+  if (freshLogin || h === '' || h === 'login') window.history.replaceState(null, '', '#home');
+  freshLogin = false;
   renderTopbar(profile);
   renderSidebar();
   show('authLoading', 'none');
@@ -183,7 +187,6 @@ function showLoginPage() {
   }
 
   window.authState = 'out';
-  if (window.location.hash !== '#login') window.history.replaceState(null, '', '#login');
   hideForgot();
 
   show('authLoading', 'none');
