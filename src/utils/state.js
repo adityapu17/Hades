@@ -76,6 +76,6 @@ export const EMBED_HINTS = {
   'docs.google.com/document': '💡 Docs: File → Publikasikan ke web → salin link.'
 };
 
-export const PANELS = ['panelImg', 'panelLink', 'panelEmbed', 'panelFile'];
-export const TBBTN = { panelImg: 'tbImg', panelLink: 'tbLink', panelEmbed: 'tbEmbed', panelFile: 'tbFile' };
+export const PANELS = ['panelImg', 'panelLink', 'panelEmbed', 'panelFile', 'panelQa'];
+export const TBBTN = { panelImg: 'tbImg', panelLink: 'tbLink', panelEmbed: 'tbEmbed', panelFile: 'tbFile', panelQa: 'tbQa' };
 export const OFFICE_EXT = ['xls', 'xlsx', 'doc', 'docx'];

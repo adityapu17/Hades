@@ -263,3 +263,11 @@ textarea.has-toolbar { border-radius: 0 0 8px 8px; border-top: none; }
   .sidebar.collapsed .nav-item { justify-content: center; padding: 9px 0; font-size: 18px; }
   .sidebar.collapsed #adminMenuSection { border-top: 1px solid #e2e8f0; margin-top: 4px; padding-top: 12px; }
 }
+
+.article-content .qa { border: 1px solid #e2e8f0; border-radius: 8px; margin: 8px 0; background: #fff; overflow: hidden; }
+.article-content .qa summary { cursor: pointer; padding: 10px 14px; font-weight: 600; font-size: 14px; color: #1a365d; list-style: none; display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+.article-content .qa summary::-webkit-details-marker { display: none; }
+.article-content .qa summary::after { content: '▾'; transition: transform .2s; color: #718096; }
+.article-content .qa[open] summary::after { transform: rotate(180deg); }
+.article-content .qa[open] summary { background: #ebf0ff; }
+.article-content .qa-a { padding: 10px 14px; font-size: 14px; line-height: 1.6; border-top: 1px solid #e2e8f0; }

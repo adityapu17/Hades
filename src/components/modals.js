@@ -103,6 +103,15 @@ export function renderModals() {
               <button class="btn btn-primary btn-sm" onclick="insertFile()">Sisipkan</button>
             </div>
           </div>
+          <div id="panelQa" class="insert-panel">
+            <div class="insert-panel-title">❓ Tanya Jawab (buka-tutup)</div>
+            <div class="form-group"><label class="form-label">Pertanyaan</label><input id="qaQ" class="form-input" placeholder="contoh: Bagaimana cara reset password?"/></div>
+            <div class="form-group"><label class="form-label">Jawaban</label><textarea id="qaA" class="form-input" rows="4" placeholder="Tulis jawaban... (Enter = baris baru)"></textarea></div>
+            <div style="display:flex;justify-content:flex-end;gap:6px">
+              <button class="btn btn-ghost btn-sm" onclick="closePanel('panelQa')">Batal</button>
+              <button class="btn btn-primary btn-sm" onclick="insertQa()">Sisipkan</button>
+            </div>
+          </div>
           <div class="form-group">
             <label class="form-label">Isi Artikel</label>
             <div class="toolbar">
@@ -113,6 +122,7 @@ export function renderModals() {
               <button class="tb-btn" id="tbLink" onclick="togglePanel('panelLink')">📎 Download</button>
               <button class="tb-btn" id="tbEmbed" onclick="togglePanel('panelEmbed')">🔗 Embed</button>
               <button class="tb-btn" id="tbFile" onclick="togglePanel('panelFile')">📄 Upload File</button>
+              <button class="tb-btn" id="tbQa" onclick="togglePanel('panelQa')">❓ QnA</button>
             </div>
             <textarea id="artBody" class="form-input has-toolbar" placeholder="Tulis isi artikel..."></textarea>
           </div>
@@ -407,6 +417,19 @@ export function insertEmbed() {
   closePanel('panelEmbed');
 }
 
+export function insertQa() {
+  const q = document.getElementById('qaQ').value.trim().replace(/\|/g, '/');
+  const a = document.getElementById('qaA').value.trim().replace(/\r?\n/g, '<br>');
+  if (!q || !a) { alert('Pertanyaan dan jawaban wajib diisi.'); return; }
+  const ta = document.getElementById('artBody');
+  const before = ta.value.substring(0, ta.selectionStart);
+  const lead = before && !before.endsWith('\n') ? '\n' : '';
+  insertAtCursor(ta, `${lead}[qa:${q}|${a}]\n`);
+  document.getElementById('qaQ').value = '';
+  document.getElementById('qaA').value = '';
+  closePanel('panelQa');
+}
+
 // Article Editor
 export function openNewArticle() {
   editingArticleId = null;
@@ -571,6 +594,7 @@ window.insertFile = insertFile;
 window.insertLink = insertLink;
 window.setEmbedSize = setEmbedSize;
 window.insertEmbed = insertEmbed;
+window.insertQa = insertQa;
 window.openNewArticle = openNewArticle;
 window.editArticle = editArticle;
 window.saveArticle = saveArticle;

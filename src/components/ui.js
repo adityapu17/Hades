@@ -77,6 +77,9 @@ export function renderBody(txt) {
       } else if (/^\[dl:(.+)\|(.+)\]$/.test(l)) {
         const m = l.match(/^\[dl:(.+)\|(.+)\]$/);
         html += `<a href="${m[2]}" target="_blank" rel="noopener" download="${m[1]}" class="dl-btn">⬇️ ${m[1]}</a>`;
+      } else if (/^\[qa:(.+?)\|(.+)\]$/.test(l)) {
+        const m = l.match(/^\[qa:(.+?)\|(.+)\]$/);
+        html += `<details class="qa"><summary>${m[1]}</summary><div class="qa-a">${m[2]}</div></details>`;
       } else if (/^\[embed:(.+)\|(.+)\|(.+)\|(.+)\|(.+)\]$/.test(l)) {
         const m = l.match(/^\[embed:(.+)\|(.+)\|(.+)\|(.+)\|(.+)\]$/);
         html += `<div class="embed-wrap"><div class="embed-label">🔗 ${m[1]}</div><iframe src="${m[2]}" width="${m[3]}" height="${m[4]}" scrolling="${m[5]}" allowfullscreen></iframe></div>`;
