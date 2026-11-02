@@ -1,7 +1,7 @@
 // ===== Data Layer (Firestore) =====
 import { db, col, document, qOrdered } from './firebase.js';
 import { getDocs, addDoc, setDoc, deleteDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.9.0/firebase-firestore.js";
-import { menus, articles, DEFAULT_MENUS, DEFAULT_ARTICLES, setMenus, setArticles, setUnsubMenus, setUnsubArticles } from './state.js';
+import { menus, articles, DEFAULT_MENUS, DEFAULT_ARTICLES, setMenus, setArticles, setUnsubMenus, setUnsubArticles, setMenuVisibility, setUnsubSettings, menuVisibility } from './state.js';
 import { renderAll } from '../components/pageRenderer.js';
 import { buildNav } from '../components/sidebar.js';
 import { showToast, setLoading } from '../components/ui.js';
@@ -33,8 +33,17 @@ export function startListeners() {
     setTimeout(() => { setLoading(0); }, 400);
   });
 
+  // Pengaturan menu mana yang tampil untuk role member
+  const unsubSettings = onSnapshot(document('settings', 'menuVisibility'), (snap) => {
+    setMenuVisibility(snap.exists() ? snap.data() : { hiddenForUser: [] });
+    buildNav();
+    renderAll();
+  }, (err) => console.warn('[Hades] settings/menuVisibility tidak terbaca:', err.message));
+
   setUnsubMenus(unsubMenus);
   setUnsubArticles(unsubArticles);
+  setUnsubSettings(unsubSettings);
+  window.unsubSettings = unsubSettings;
 
   // Expose globally for logout
   window.unsubArticles = unsubArticles;
@@ -82,4 +91,37 @@ export async function reorderMenus(newOrder) {
   for (let i = 0; i < newOrder.length; i++) {
     await setDoc(document('menus', newOrder[i].id), { ...newOrder[i], order: i });
   }
+}
+
+// Visibilitas menu untuk role member (admin selalu melihat semua)
+export async function setMenuHiddenForUser(id, hidden) {
+  const set = new Set(menuVisibility.hiddenForUser);
+  if (hidden) set.add(id); else set.delete(id);
+  await setDoc(document('settings', 'menuVisibility'), { hiddenForUser: Array.from(set) });
+}
+
+// ===== Changelog: edit admin disimpan di Firestore (koleksi "changelog", id dokumen = versi) =====
+// changelog.json (hasil sync Git) tetap dibuat ulang tiap build; versi yang sudah diedit admin
+// TIDAK ditimpa karena saat tampil, dokumen Firestore diutamakan di atas hasil sync.
+export async function loadChangelogOverrides() {
+  try {
+    const snap = await getDocs(col('changelog'));
+    const map = {};
+    snap.docs.forEach(d => { map[d.id] = d.data(); });
+    return map;
+  } catch (e) {
+    console.warn('[Hades] Changelog override tidak terbaca:', e.message);
+    return {};
+  }
+}
+
+export async function saveChangelogEntry(entry) {
+  await setDoc(document('changelog', entry.version), {
+    version: entry.version, date: entry.date, type: entry.type, changes: entry.changes,
+    editedBy: window.currentUser?.name || 'Admin', editedAt: new Date().toISOString()
+  });
+}
+
+export async function resetChangelogEntry(version) {
+  await deleteDoc(document('changelog', version));
 }

@@ -10,6 +10,7 @@ const routes = {
   'menumanager': 'menumanager',
   'users': 'users',
   'changelog': 'changelog',
+  'ticketlog': 'ticketlog',
   'profile': 'profile',
   'login': 'login'
 };

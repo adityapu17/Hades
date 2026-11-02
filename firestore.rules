@@ -42,6 +42,18 @@ service cloud.firestore {
       allow write: if isAdmin();
     }
 
+    // Pengaturan aplikasi (mis. settings/menuVisibility = menu yang disembunyikan dari role member)
+    match /settings/{docId} {
+      allow read: if isActive();
+      allow write: if isAdmin();
+    }
+
+    // Edit manual changelog oleh admin (id dokumen = versi, mis. v2026.10)
+    match /changelog/{version} {
+      allow read: if isActive();
+      allow write: if isAdmin();
+    }
+
     // ----- Quiz app (/quiz/) -----
     match /questionBanks/{bankId} {
       allow read: if isActive();

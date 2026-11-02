@@ -14,8 +14,17 @@ export let prevView = 'home';
 export let currentCatMenu = null;
 export let sidebarCollapsed = false;
 
+// Menu yang disembunyikan dari role "member" (diatur admin di Kelola Menu).
+// Berisi id menu Firestore + id menu bawaan ('quiz', 'ticketlog'). Admin selalu melihat semua.
+export let menuVisibility = { hiddenForUser: [] };
+export const BUILTIN_MENUS = [
+  { id: 'quiz', name: 'Quiz', icon: '📝' },
+  { id: 'ticketlog', name: 'Ticket Log', icon: '🎫' }
+];
+
 export let unsubArticles = null;
 export let unsubMenus = null;
+export let unsubSettings = null;
 
 // Several components read these through window.* (inline onclick handlers, modals.js, sidebar.js),
 // so every setter keeps the window copy in sync with the module copy.
@@ -23,6 +32,18 @@ window.menus = menus;
 window.articles = articles;
 window.currentUser = currentUser;
 
+export function setMenuVisibility(val) {
+  menuVisibility = { hiddenForUser: Array.isArray(val?.hiddenForUser) ? val.hiddenForUser : [] };
+  window.menuVisibility = menuVisibility;
+}
+export function isMenuVisible(id) {
+  if (id === 'beranda') return true;
+  if (window.currentUser?.role === 'admin') return true;
+  return !menuVisibility.hiddenForUser.includes(id);
+}
+export function visibleArticles() {
+  return articles.filter(a => isMenuVisible(a.cat));
+}
 export function setMenus(val) { menus = val; window.menus = val; }
 export function setArticles(val) { articles = val; window.articles = val; }
 export function setCurrentUser(val) { currentUser = val; window.currentUser = val; }
@@ -38,6 +59,7 @@ export function setCurrentCatMenu(val) { currentCatMenu = val; }
 export function setSidebarCollapsed(val) { sidebarCollapsed = val; }
 export function setUnsubArticles(val) { unsubArticles = val; }
 export function setUnsubMenus(val) { unsubMenus = val; }
+export function setUnsubSettings(val) { unsubSettings = val; }
 
 // Default data
 export const DEFAULT_MENUS = [

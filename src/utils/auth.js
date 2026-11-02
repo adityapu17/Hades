@@ -57,6 +57,7 @@ export async function doLogin() {
 export function doLogout() {
   if (window.unsubArticles) window.unsubArticles();
   if (window.unsubMenus) window.unsubMenus();
+  if (window.unsubSettings) window.unsubSettings();
   fbSignOut(auth);
   setCurrentUser(null);
   setAppShown(false);
@@ -108,6 +109,7 @@ export function initAuth() {
       // Avoid stacking listeners if this callback fires more than once
       if (window.unsubArticles) window.unsubArticles();
       if (window.unsubMenus) window.unsubMenus();
+      if (window.unsubSettings) window.unsubSettings();
       startListeners();
     } catch (e) {
       console.error('[Hades] Gagal load profil/data setelah restore sesi:', e);

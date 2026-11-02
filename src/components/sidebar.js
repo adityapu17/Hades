@@ -1,5 +1,5 @@
 // ===== Sidebar Component =====
-import { menus, DEFAULT_MENUS, sidebarCollapsed, setSidebarCollapsed } from '../utils/state.js';
+import { menus, DEFAULT_MENUS, sidebarCollapsed, setSidebarCollapsed, isMenuVisible } from '../utils/state.js';
 import { tagClass, tagLabel, catIcon, articleCard } from './ui.js';
 
 let sidebarInitialized = false;
@@ -19,7 +19,8 @@ export function renderSidebar() {
         </button>
       </div>
       <div id="navList"></div>
-      <a class="nav-item" href="/quiz/" title="Quiz"><span>📝</span><span class="nav-label">Quiz</span></a>
+      <a class="nav-item" id="navQuiz" href="/quiz/" title="Quiz"><span>📝</span><span class="nav-label">Quiz</span></a>
+      <div class="nav-item" id="navTicketLog" data-menuid="ticketlog" title="Ticket Log" onclick="closeSidebar();navigateTo('ticketlog')"><span>🎫</span><span class="nav-label">Ticket Log</span></div>
     </div>
     <div class="sidebar-section" id="adminMenuSection" style="display:none">
       <div class="sidebar-label">Admin</div>
@@ -52,7 +53,7 @@ export function buildNav() {
   if (!nl) return;
   
   nl.innerHTML = '';
-  menus.forEach((m, i) => {
+  menus.filter(m => isMenuVisible(m.id)).forEach((m, i) => {
     const div = document.createElement('div');
     div.className = 'nav-item' + (i === 0 ? ' active' : '');
     div.dataset.menuid = m.id;
@@ -61,6 +62,12 @@ export function buildNav() {
     div.onclick = () => { closeSidebar(); handleMenuClick(m, div); };
     nl.appendChild(div);
   });
+
+  // Menu bawaan (di luar Firestore) ikut aturan visibilitas
+  const q = document.getElementById('navQuiz');
+  if (q) q.style.display = isMenuVisible('quiz') ? '' : 'none';
+  const t = document.getElementById('navTicketLog');
+  if (t) t.style.display = isMenuVisible('ticketlog') ? '' : 'none';
 
   // Update category select in editor modal if open
   const sel = document.getElementById('artCat');

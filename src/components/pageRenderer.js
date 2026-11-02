@@ -1,9 +1,11 @@
 // ===== Page Renderer =====
-import { menus, articles, currentUser, EMBED_HINTS } from '../utils/state.js';
+import { menus, articles, currentUser, EMBED_HINTS, BUILTIN_MENUS, menuVisibility, isMenuVisible, visibleArticles } from '../utils/state.js';
 import { tagClass, tagLabel, catIcon, articleCard, renderBody, showToast, setLoading, insertAtCursor } from './ui.js';
 import { navigateTo } from './sidebar.js';
 import { openNewArticle, editArticle, openMenuEditor, editMenu, askDelete, openProfileModal } from './modals.js';
 import { renderUsersPage, refreshUsers } from './usersPage.js';
+import { renderChangelog } from './changelogPage.js';
+import { renderTicketLog, initTicketLog } from './ticketLogPage.js';
 
 // Make functions available globally
 window.openArticle = openArticle;
@@ -21,6 +23,13 @@ window.setEmbedSize = (w, h) => {
   const hEl = document.getElementById('embedH'); 
   if (wEl) wEl.value = w; 
   if (hEl) hEl.value = h; 
+};
+window.toggleMenuForUser = async (id, show) => {
+  try {
+    const { setMenuHiddenForUser } = await import('../utils/data.js');
+    await setMenuHiddenForUser(id, !show);
+    showToast(show ? 'Menu ditampilkan untuk user ✓' : 'Menu disembunyikan dari user ✓');
+  } catch (e) { alert('Gagal menyimpan: ' + e.message); }
 };
 window.dragStart = dragStart;
 window.dragOver = dragOver;
@@ -59,6 +68,11 @@ export async function renderPage(page, params) {
     case 'changelog':
       main.innerHTML = await renderChangelog();
       break;
+    case 'ticketlog':
+      if (!isMenuVisible('ticketlog')) { main.innerHTML = '<div class="empty">Menu tidak tersedia untuk akun kamu.</div>'; break; }
+      // Jangan render ulang kalau sudah tampil: snapshot Firestore memanggil renderAll() dan akan menghapus hasil pencarian
+      if (!document.getElementById('tlRoot')) { main.innerHTML = renderTicketLog(); initTicketLog(); }
+      break;
     case 'profile':
       main.innerHTML = renderProfile();
       break;
@@ -89,15 +103,17 @@ function updateActiveNav(page, params) {
     document.querySelector('[onclick="navigateTo(\'users\')"]')?.classList.add('active');
   } else if (page === 'changelog') {
     document.querySelector('[onclick="navigateTo(\'changelog\')"]')?.classList.add('active');
+  } else if (page === 'ticketlog') {
+    document.querySelector('[data-menuid="ticketlog"]')?.classList.add('active');
   }
 }
 
 function renderHome() {
   if (!menus.length) return '<div class="empty">Memuat...</div>';
   
-  const nonSys = menus.filter(m => !m.system);
+  const nonSys = menus.filter(m => !m.system && isMenuVisible(m.id));
   const stats = [
-    { n: articles.length, l: 'Total Artikel' },
+    { n: visibleArticles().length, l: 'Total Artikel' },
     ...nonSys.slice(0, 3).map(m => ({ n: articles.filter(a => a.cat === m.id).length, l: m.name }))
   ];
 
@@ -121,7 +137,7 @@ function renderHome() {
 }
 
 function renderRecentList() {
-  const sorted = [...articles].sort((a, b) => (b.order || 0) - (a.order || 0)).slice(0, 5);
+  const sorted = [...visibleArticles()].sort((a, b) => (b.order || 0) - (a.order || 0)).slice(0, 5);
   return sorted.length ? sorted.map(a => articleCard(a, true, menus)).join('') : '<div class="empty">Belum ada artikel</div>';
 }
 
@@ -137,7 +153,7 @@ function renderArticle(params) {
   const id = urlParams.get('id');
   const a = articles.find(x => x.id === id);
   
-  if (!a) {
+  if (!a || !isMenuVisible(a.cat)) {
     return `<div class="article-view-box"><div class="empty">Artikel tidak ditemukan</div></div>`;
   }
 
@@ -162,7 +178,7 @@ function renderCategory(params) {
   const menuId = urlParams.get('id');
   const m = menus.find(x => x.id === menuId);
   
-  if (!m) {
+  if (!m || !isMenuVisible(m.id)) {
     return `<div class="empty">Menu tidak ditemukan</div>`;
   }
 
@@ -205,8 +221,25 @@ function renderMenuManagerPage() {
       <button class="btn btn-primary" onclick="openMenuEditor()">+ Menu Baru</button>
     </div>
     <div style="font-size:12px;color:#718096;margin-bottom:14px">Drag untuk mengubah urutan.</div>
-    <div id="menuManagerList">${renderMenuManagerList()}</div>
+    <div id="menuManagerList">${renderMenuManagerList()}${renderBuiltinMenuRows()}</div>
   `;
+}
+
+function userToggle(id) {
+  const shown = !menuVisibility.hiddenForUser.includes(id);
+  return `<label title="Tampilkan menu ini untuk role user" style="display:flex;align-items:center;gap:5px;font-size:12px;color:#4a5568;cursor:pointer;margin-right:8px"><input type="checkbox" ${shown ? 'checked' : ''} onclick="event.stopPropagation()" onchange="toggleMenuForUser('${id}', this.checked)"/> Tampil untuk user</label>`;
+}
+
+function renderBuiltinMenuRows() {
+  return `
+    <div style="font-size:12px;color:#718096;margin:18px 0 8px">Menu bawaan (tidak bisa diurutkan/dihapus)</div>
+    ${BUILTIN_MENUS.map(m => `
+      <div class="menu-item-row">
+        <span style="width:16px"></span>
+        <span style="font-size:18px;width:24px;text-align:center">${m.icon}</span>
+        <span style="flex:1;font-size:13px;font-weight:500">${m.name}</span>
+        ${userToggle(m.id)}
+      </div>`).join('')}`;
 }
 
 function renderMenuManagerList() {
@@ -215,83 +248,13 @@ function renderMenuManagerList() {
       <span class="drag-handle">⠿</span>
       <span style="font-size:18px;width:24px;text-align:center">${m.icon}</span>
       <span style="flex:1;font-size:13px;font-weight:500">${m.name}</span>
+      ${m.id === 'beranda' ? '' : userToggle(m.id)}
       ${m.system ? '<span style="font-size:11px;color:#a0aec0;padding:2px 7px;background:#f7fafc;border-radius:8px">sistem</span>' : ''}
       <div style="display:flex;gap:5px">
         <button class="btn btn-ghost btn-sm" onclick="editMenu('${m.id}')">Edit</button>
         ${m.system ? '' : `<button class="btn btn-sm" style="background:#fff5f5;color:#e53e3e;border:1px solid #fed7d7" onclick="askDelete('${m.id}','menu')">Hapus</button>`}
       </div>
     </div>`).join('');
-}
-
-async function renderChangelog() {
-  // Fetch changelog from generated JSON file
-  let commits = [];
-  try {
-    const response = await fetch('/changelog.json');
-    if (response.ok) {
-      commits = await response.json();
-    }
-  } catch (e) {
-    console.warn('Could not fetch changelog from JSON, using fallback');
-  }
-
-  // Fallback to static changelog if fetch fails
-  if (commits.length === 0) {
-    commits = getFallbackChangelog();
-  }
-
-  return `
-    <div style="margin-bottom:24px">
-      <h1 style="font-size:24px;font-weight:700;color:#1a1a2e;margin-bottom:8px">📋 Changelog</h1>
-      <p style="color:#718096;font-size:13px">Riwayat perubahan Hades KB — disinkronkan dari Git history</p>
-    </div>
-    <div class="changelog-list">
-      ${commits.map(c => renderChangelogEntry(c)).join('')}
-    </div>
-  `;
-}
-
-function getFallbackChangelog() {
-  return [
-    {
-      version: 'v1.0.0',
-      date: '2025-01-15',
-      type: 'feat',
-      changes: [
-        'Initial release of Hades KB',
-        'Multi-page architecture with hash-based routing',
-        'Expandable/collapsible sidebar with persistent state',
-        'Article management (CRUD) with rich editor',
-        'Menu management with drag-and-drop reordering',
-        'Firebase Firestore real-time sync',
-        'Image, file, embed, and link insertion',
-        'User authentication with role-based access',
-        'Changelog page synced with Git history'
-      ]
-    }
-  ];
-}
-
-function renderChangelogEntry(commit) {
-  const typeClass = commit.type || 'feat';
-  const dateStr = new Date(commit.date).toLocaleDateString('id-ID', { 
-    day: 'numeric', month: 'long', year: 'numeric' 
-  });
-  
-  return `
-    <div class="changelog-entry">
-      <div class="changelog-entry-header">
-        <span class="changelog-version">${commit.version}</span>
-        <span class="changelog-date">${dateStr}</span>
-        <span class="changelog-type ${typeClass}">${typeClass}</span>
-      </div>
-      <div class="changelog-entry-body">
-        <ul>
-          ${commit.changes.map(change => `<li>${change}</li>`).join('')}
-        </ul>
-      </div>
-    </div>
-  `;
 }
 
 function renderProfile() {
@@ -328,7 +291,7 @@ function doSearch(q) {
   const res = document.getElementById('searchResults');
   if (!res) return;
   if (!q.trim()) { res.style.display = 'none'; return; }
-  const found = articles.filter(a => a.title.toLowerCase().includes(q.toLowerCase()) || a.body.toLowerCase().includes(q.toLowerCase()));
+  const found = visibleArticles().filter(a => a.title.toLowerCase().includes(q.toLowerCase()) || a.body.toLowerCase().includes(q.toLowerCase()));
   res.style.display = 'block';
   res.innerHTML = `<div style="font-size:13px;color:#718096;margin-bottom:8px">Hasil: <b>${found.length}</b> artikel</div>` + (found.length ? found.map(a => articleCard(a, true, menus)).join('') : '<div class="empty">Tidak ditemukan</div>');
 }
