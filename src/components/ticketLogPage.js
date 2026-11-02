@@ -147,6 +147,21 @@ async function openDetail(i) {
   }
 }
 
+// Remarks dari export sering kehilangan baris baru (label menempel ke kata sebelumnya: "...MeteraiSubjek :").
+// Dirapikan hanya saat ditampilkan; data asli di database tidak diubah.
+function fmtRemarks(t){
+  let s = String(t == null ? '' : t).replace(/\r\n?/g, '\n');
+  s = s.replace(/[ \t]*(Kategori|Subjek|Tipe Tiket|Pelapor|Perusahaan|Keterangan|Other Information|Email Account Used)([ \t]*:)/g, '\n$1$2');
+  const i = s.indexOf('Other Information');
+  if (i >= 0) {
+    const head = s.slice(0, i), tail = s.slice(i)
+      .replace(/[ \t]+([A-E])\.[ \t]+(?=[A-Z])/g, '\n$1. ')
+      .replace(/[ \t]*_{5,}[ \t]*/g, '\n_________\n');
+    s = head + tail;
+  }
+  return s.replace(/\n[ \t]*\n+/g, '\n').trim();
+}
+
 function kv(k, v, hdr) {
   const val = (v === '' || v == null) ? '<span class="tl-muted">—' + (hdr === null ? ' (kolom belum terdeteksi)' : '') + '</span>' : esc(v);
   return '<div class="tl-k">' + k + '</div><div class="tl-v">' + val + '</div>';
@@ -158,7 +173,7 @@ function detailHtml(d) {
     const has = x.ts !== null && x.ts !== undefined;
     return '<li class="' + (has ? 'has' : 'none') + '"><span class="tl-tk">' + label + '</span> — ' + (has ? fmtDt(x.ts, x.mode) : '—') + '</li>';
   }).join('');
-  const block = (title, f) => '<div class="tl-sec">' + title + '</div>' + (f.value ? '<div class="tl-text">' + esc(f.value) + '</div>' : '<div class="tl-muted">—</div>');
+  const block = (title, f, fmt) => '<div class="tl-sec">' + title + '</div>' + (f.value ? '<div class="tl-text">' + esc(fmt ? fmt(f.value) : f.value) + '</div>' : '<div class="tl-muted">—</div>');
   return '<div class="tl-card"><div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:14px">' +
     '<h3 style="margin:0;font-size:16px">Tiket ' + esc(d.id) + '</h3>' +
     (d.escalated ? '<span class="tl-badge">Escalated</span>' : '') +
@@ -167,7 +182,7 @@ function detailHtml(d) {
     kv('Severity', d.severity.value, d.severity.header) + kv('Sub Category', d.subCategory) + kv('Detail Sub Category', d.detailSubCategory) +
     kv('Unit', d.unit.value, d.unit.header) + kv('Dibuat / Dibuka oleh', d.createdBy.value, d.createdBy.header) + '</div>' +
     '<div class="tl-sec">Riwayat tanggal</div><ul class="tl-tline">' + tl + '</ul>' +
-    block('Remarks', d.remarks) + block('Feedback', d.feedback) +
+    block('Remarks', d.remarks, fmtRemarks) + block('Feedback', d.feedback) +
     '<details style="margin-top:18px"><summary class="tl-muted" style="cursor:pointer">Semua kolom data (' + d.allColumns.length + ')</summary>' +
     '<div style="overflow-x:auto"><table class="tl-table"><tbody>' +
     d.allColumns.map(c => '<tr><td style="width:34%;font-weight:600;color:#718096">' + esc(c[0]) + '</td><td style="word-break:break-word">' + (c[1] === '' ? '<span class="tl-muted">—</span>' : esc(c[1])) + '</td></tr>').join('') +
