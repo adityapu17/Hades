@@ -27,7 +27,7 @@ async function api(qs) {
   return j;
 }
 
-let sTimer = null, sSeq = 0, sItems = [], sActive = null, sResp = null, sQ = '';
+let sSeq = 0, sItems = [], sActive = null, sResp = null, sQ = '';
 const sFilter = { year: '', month: '', detail: '' };
 
 export function renderTicketLog() {
@@ -36,8 +36,11 @@ export function renderTicketLog() {
       <div class="section-title">🎫 Ticket Log</div>
       <div class="tl-card">
         <div class="tl-label">Cari tiket</div>
-        <input type="search" id="tl-input" class="tl-input" placeholder="Ketik ID tiket, subject, atau isi remarks (mengandung kata)..." autocomplete="off"/>
-        <div class="tl-hint">Minimal 2 karakter. Data diambil dari database tiket Quick Report Helper (hanya baca).</div>
+        <div style="display:flex;gap:8px">
+          <input type="text" id="tl-input" class="tl-input" placeholder="Ketik ID tiket, subject, atau isi remarks (mengandung kata)..." autocomplete="off" enterkeyhint="search"/>
+          <button type="button" class="btn btn-primary" id="tl-search-btn" style="white-space:nowrap">🔍 Cari</button>
+        </div>
+        <div class="tl-hint">Minimal 2 karakter. Tekan Enter atau klik Cari untuk mencari. Data diambil dari database tiket Quick Report Helper (hanya baca).</div>
       </div>
       <div id="tl-out"></div>
     </div>`;
@@ -47,7 +50,9 @@ export function initTicketLog() {
   sItems = []; sActive = null; sResp = null; sQ = '';
   sFilter.year = sFilter.month = sFilter.detail = '';
   const input = $('tl-input');
-  input.addEventListener('input', () => { clearTimeout(sTimer); sTimer = setTimeout(doSearch, 300); });
+  // Sengaja TIDAK ada listener 'input': mengetik tidak memicu request/pencarian apa pun.
+  input.addEventListener('keydown', (e) => { if (e.key === 'Enter' && !e.isComposing) { e.preventDefault(); doSearch(); } });
+  $('tl-search-btn').addEventListener('click', doSearch);
   input.focus();
 }
 

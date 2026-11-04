@@ -120,7 +120,7 @@ function renderHome() {
   return `
     <div style="margin-bottom:18px">
       <div style="font-size:19px;font-weight:700;margin-bottom:4px">Selamat datang 👋</div>
-      <div style="font-size:13px;color:#718096">Cari SOP, panduan, atau dokumentasi tim Helpdesk PERURI</div>
+      <div style="font-size:13px;color:#718096">Cari untuk hasil cepat</div>
     </div>
     <div class="search-wrap"><span style="color:#a0aec0">🔍</span><input type="text" placeholder="Cari artikel..." id="searchInput"/></div>
     <div id="searchResults" style="display:none;margin-bottom:18px"></div>

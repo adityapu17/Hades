@@ -1,43 +1,12 @@
 // ===== Changelog page: hasil sync Git + edit manual admin (disimpan di Firestore) =====
-import { loadChangelogOverrides, saveChangelogEntry, resetChangelogEntry } from '../utils/data.js';
+import { saveChangelogEntry, resetChangelogEntry } from '../utils/data.js';
+import { loadMerged } from '../utils/changelog.js';
 import { showToast, openModal, closeModal } from './ui.js';
 
 const esc = (s) => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-const hashesOf = (lines) => new Set((lines || []).flatMap(l => (String(l).match(/\[([0-9a-f]{7,})\]\s*$/) || []).slice(1)));
 const TYPES = ['feat', 'fix', 'refactor', 'docs', 'chore'];
 
 let entries = new Map(); // version -> entry yang sedang tampil
-
-function getFallbackChangelog() {
-  return [{
-    version: 'v1.0.0', date: '2025-01-15', type: 'feat',
-    changes: ['Initial release of Hades KB', 'Changelog page synced with Git history']
-  }];
-}
-
-// Entry hasil sync Git, ditimpa oleh versi yang diedit admin (kalau ada).
-// Versi BARU dari sync tetap muncul; versi yang sudah diedit admin tidak pernah ditimpa sync.
-async function loadMerged() {
-  let base = [];
-  try {
-    const r = await fetch('/changelog.json');
-    if (r.ok) base = await r.json();
-  } catch (e) { console.warn('Could not fetch changelog from JSON'); }
-  if (!base.length) base = getFallbackChangelog();
-
-  const ov = await loadChangelogOverrides();
-  const merged = base.map(e => {
-    const o = ov[e.version];
-    if (!o) return { ...e, edited: false };
-    const have = hashesOf(o.changes);
-    const missing = (e.changes || []).filter(l => { const h = [...hashesOf([l])][0]; return h && !have.has(h); });
-    return { version: e.version, date: o.date, type: o.type, changes: o.changes, edited: true, editedBy: o.editedBy, gitChanges: e.changes, missing };
-  });
-  Object.keys(ov).forEach(v => {
-    if (!base.some(e => e.version === v)) merged.push({ ...ov[v], edited: true, gitChanges: [], missing: [] });
-  });
-  return merged.sort((a, b) => String(b.date).localeCompare(String(a.date)));
-}
 
 function entryHtml(c, isAdmin) {
   const dateStr = new Date(c.date).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
@@ -52,7 +21,7 @@ function entryHtml(c, isAdmin) {
   return `
     <div class="changelog-entry">
       <div class="changelog-entry-header">
-        <span class="changelog-version">${esc(c.version)}</span>
+        <span class="changelog-version">v${esc(c.label)}</span>
         <span class="changelog-date">${dateStr}</span>
         <span class="changelog-type ${typeClass}">${typeClass}</span>
         ${c.edited ? '<span style="font-size:11px;color:#718096">✎ diedit admin</span>' : ''}
@@ -63,7 +32,7 @@ function entryHtml(c, isAdmin) {
 }
 
 export async function renderChangelog() {
-  const list = await loadMerged();
+  const list = await loadMerged(true);
   entries = new Map(list.map(e => [e.version, e]));
   const isAdmin = window.currentUser?.role === 'admin';
   return `
@@ -110,7 +79,7 @@ window.editChangelog = (version) => {
   if (!e) return;
   ensureModal();
   editingVersion = version;
-  document.getElementById('clTitle').textContent = 'Edit ' + version;
+  document.getElementById('clTitle').textContent = 'Edit v' + e.label;
   document.getElementById('clDate').value = String(e.date).slice(0, 10);
   document.getElementById('clType').value = TYPES.includes(e.type) ? e.type : 'chore';
   document.getElementById('clChanges').value = (e.changes || []).join('\n');
@@ -139,7 +108,7 @@ window.saveChangelog = async () => {
 };
 
 window.resetChangelog = async (version) => {
-  if (!confirm(`Kembalikan ${version} ke hasil sync Git? Edit manual akan hilang.`)) return;
+  if (!confirm(`Kembalikan v${entries.get(version)?.label || version} ke hasil sync Git? Edit manual akan hilang.`)) return;
   try {
     await resetChangelogEntry(version);
     showToast('Dikembalikan ke versi Git ✓');

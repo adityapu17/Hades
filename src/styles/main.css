@@ -260,7 +260,7 @@ textarea.has-toolbar { border-radius: 0 0 8px 8px; border-top: none; }
   .sidebar.collapsed .sidebar-version { display: none; }
   .sidebar.collapsed .sidebar-head { justify-content: center; }
   .sidebar.collapsed .sidebar-toggle-btn svg { transform: rotate(180deg); }
-  .sidebar.collapsed .nav-item { justify-content: center; padding: 9px 0; font-size: 18px; }
+  .sidebar.collapsed .nav-item { justify-content: center; padding: 7px 0; } /* ukuran icon sama seperti saat terbuka, hanya label yang disembunyikan */
   .sidebar.collapsed #adminMenuSection { border-top: 1px solid #e2e8f0; margin-top: 4px; padding-top: 12px; }
 }
 

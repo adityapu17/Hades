@@ -1,6 +1,7 @@
 // ===== Sidebar Component =====
 import { menus, DEFAULT_MENUS, sidebarCollapsed, setSidebarCollapsed, isMenuVisible } from '../utils/state.js';
 import { tagClass, tagLabel, catIcon, articleCard } from './ui.js';
+import { getAppVersion } from '../utils/changelog.js';
 
 let sidebarInitialized = false;
 
@@ -30,13 +31,23 @@ export function renderSidebar() {
       <div class="nav-item" title="Changelog" onclick="navigateTo('changelog')"><span>📋</span><span class="nav-label">Changelog</span></div>
     </div>
     <div class="sidebar-section">
-      <div class="sidebar-version">Hades KB<br>v1.0.0</div>
+      <div class="sidebar-version">Hades KB<br><span id="appVersion"></span></div>
     </div>
   `;
 
   buildNav();
   updateAdminMenuVisibility();
   syncToggleButton();
+  syncAppVersion();
+}
+
+// Versi di footer sidebar selalu = versi terbaru di menu Changelog
+async function syncAppVersion() {
+  try {
+    const v = await getAppVersion();
+    const el = document.getElementById('appVersion');
+    if (el) el.textContent = 'v' + v;
+  } catch (e) { console.warn('[Hades] Versi changelog tidak terbaca:', e.message); }
 }
 
 // The toggle is an arrow-only button: CSS rotates the arrow when collapsed, this keeps the tooltip/label in sync

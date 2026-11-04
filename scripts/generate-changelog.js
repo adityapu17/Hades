@@ -171,8 +171,12 @@ function main() {
   let md = '# Changelog\n\n';
   md += 'All notable changes to Hades KB.\n\n';
   
+  // Versi tampilan: 1.N.0, N = urutan bulan (terlama = 1.1.0). Harus sama dengan src/utils/changelog.js
+  const keys = groups.map(g => g.version).sort();
+  const labelOf = (key) => `1.${keys.indexOf(key) + 1}.0`;
+
   for (const group of groups) {
-    md += `## ${group.version} (${group.date})\n\n`;
+    md += `## v${labelOf(group.version)} (${group.date})\n\n`;
     for (const change of group.changes) {
       const typeEmoji = {
         feat: '✨',

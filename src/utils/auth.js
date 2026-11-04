@@ -176,7 +176,7 @@ export async function doReset() {
     }
     // Any other error (e.g. unknown email) gets the same reply, so this form can't be used to probe which emails exist
   }
-  setMsg('loginInfo', 'Jika email terdaftar, link untuk membuat password baru sudah dikirim. Cek inbox atau folder spam.');
+  setMsg('loginInfo', 'Link reset password sudah dikirim ke email kamu, Cek inbox atau folder spam, jika email belum pernah terdaftar dapat kami kirim link');
   if (btn) { btn.textContent = 'Kirim Link Reset'; btn.disabled = false; }
 }
 
@@ -188,6 +188,7 @@ function showLoginPage() {
     return;
   }
 
+  const wasOut = window.authState === 'out';
   window.authState = 'out';
   hideForgot();
 
@@ -196,10 +197,12 @@ function showLoginPage() {
   show('appShell', 'none');
   show('adminMenuSection', 'none');
 
-  ['loginUser', 'loginPass'].forEach(id => {
-    const el = document.getElementById(id);
-    if (el) el.value = '';
-  });
+  // Jangan kosongkan isian kalau form sudah tampil (mis. fallback timeout dipanggil setelah autofill browser);
+  // hanya password yang dibersihkan saat logout.
+  if (!wasOut) {
+    const pass = document.getElementById('loginPass');
+    if (pass) pass.value = '';
+  }
   const btn = document.getElementById('loginBtn');
   if (btn) { btn.textContent = 'Masuk'; btn.disabled = false; }
 }
@@ -224,12 +227,4 @@ window.showForgot = showForgot;
 window.hideForgot = hideForgot;
 window.doReset = doReset;
 
-document.addEventListener('keydown', (e) => {
-  if (e.key === 'Enter') {
-    const loginPage = document.getElementById('loginPage');
-    if (loginPage && loginPage.style.display !== 'none') {
-      const forgotOpen = document.getElementById('forgotForm')?.style.display === 'block';
-      forgotOpen ? doReset() : doLogin();
-    }
-  }
-});
+// Enter sudah ditangani oleh submit <form> di index.html (login & lupa password)
